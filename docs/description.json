@@ -1,0 +1,194 @@
+{
+  "name": "Openlogs API",
+  "resources": [
+    {
+      "name": "Replay",
+      "path": "/list",
+      "operations": [
+        {
+          "name": "list",
+          "method": "GET",
+          "description": "Retrieve the latest 100 replays uploaded to the platform",
+          "output": {
+            "type": "Replay List",
+            "contentType": ["application/json"],
+            "status": 200
+          }
+        },
+        {
+          "name": "deleteOrder",
+          "method": "DELETE",
+          "description": "Remove the order identified by the specified ID from the system",
+          "input": {
+            "params": [
+              {
+                "optional": false,
+                "binding": "orderIdBinding"
+              }
+            ]
+          },
+          "output": {
+            "type": "Order",
+            "contentType": ["application/json"],
+            "status": 200
+          },
+          "errors": [
+            {
+              "cause": "Specified order does not exist",
+              "status": 404
+            },
+            {
+              "cause": "An unexpected runtime exception",
+              "status": 500
+            }
+          ]
+        }
+      ],
+      "inputBindings": [
+        {
+          "id": "orderIdBinding",
+          "name": "orderId",
+          "type": "string",
+          "mode": "url"
+        }
+      ]
+    },
+    {
+      "name": "AllOrders",
+      "path": "/",
+      "operations": [
+        {
+          "name": "submitOrder",
+          "method": "POST",
+          "description": "Place a new drink order.",
+          "input": {
+            "type": "OrderRequest",
+            "contentType": [
+              "application/json",
+              "application/xml"
+            ]
+          },
+          "output": {
+            "type": "Order",
+            "contentType": ["application/json"],
+            "headers": [
+              {
+                "name": "Location",
+                "type": "href",
+                "ref": "Order",
+                "description": "A URL pointer to the Order resource created by this operation"
+              }
+            ],
+            "status": 201
+          },
+          "errors": [
+            {
+              "cause": "An unexpected runtime exception",
+              "status": 500
+            }
+          ]
+        },
+        {
+          "name": "getAllOrders",
+          "method": "GET",
+          "description": "Retrieve all the orders currently pending in the system",
+          "output": {
+            "type": "list(Order)",
+            "contentType": ["application/json"],
+            "status": 200
+          },
+          "errors": [
+            {
+              "cause": "An unexpected runtime exception",
+              "status": 500
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "description": "Place and manage drink orders online.",
+  "categories": [
+    "marketing",
+    "retail"
+  ],
+  "tags": [
+    "beverages",
+    "recreation",
+    "marketing",
+    "sales"
+  ],
+  "base": [
+    "http://localhost:8080/starbucks-1.0-SNAPSHOT/starbucks",
+    "https://localhost:8243/starbucks-1.0-SNAPSHOT/starbucks"
+  ],
+  "dataTypes": [
+    {
+      "name": "Replay List",
+      "fields": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "description": "Unique system generated string identifier of the drink.",
+          "optional": false,
+          "unique": true
+        },
+        {
+          "name": "drink",
+          "type": "string",
+          "description": "Name of the drink",
+          "optional": false
+        },
+        {
+          "name": "additions",
+          "type": "list(string)",
+          "description": "List of additions (flavors) to be included in the drink",
+          "optional": true
+        },
+        {
+          "name": "cost",
+          "type": "double",
+          "description": "Cost of the drink in USD",
+          "optional": false
+        },
+        {
+          "name": "next",
+          "type": "href",
+          "ref": "Order",
+          "description": "A URL pointing to the next resource in the workflow"
+        }
+      ],
+      "description": "Describes an order submitted to the system."
+    },
+    {
+      "name": "Order",
+      "fields": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "description": "Unique system generated string identifier of the drink.",
+          "optional": false,
+          "unique": true
+        }
+      ]
+    },
+    {
+      "name": "OrderRequest",
+      "fields": [
+        {
+          "name": "drink",
+          "type": "string",
+          "description": "Name of the drink to order",
+          "optional": false
+        },
+        {
+          "name": "additions",
+          "type": "list(string)",
+          "description": "A list of additions to be included in the drink",
+          "optional": true
+        }
+      ],
+      "description": "Describes an order that can be submitted to the system by a client application."
+    }
+  ]
+}

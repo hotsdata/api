@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>HotStats - Learn how not to suck at HOTS!</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+  <script src="https://cdn.jsdelivr.net/g/lodash@4.6.1,jquery@2.2.2,mustache.js@2.2.1,momentjs@2.12.0"></script>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+  <script src="scripts/helpers.js"></script>
+
+  <!-- Custom styles for this template -->
+  <link href="css/main.css" rel="stylesheet">
+
+  <script type="text/javascript">
+    var baseUrl = app.helpers.getApiUrl() + "/replays/" + app.helpers.getReplayId();
+
+    $(function() {
+      $.when(
+        $.get('templates/teams-overview.html.mustache'),
+        $.get(baseUrl + "/general_stats")
+      ).done(function(template, data) {
+        template = template[0];
+        data = data[0];
+
+        data.forEach(function(hero) {
+          hero.kills = hero.takedowns - hero.assists;
+        });
+
+        teams = _.groupBy(data, 'team');
+
+        $('.table-heroes.blue-team').html(Mustache.render(template, {heroes: teams[0]}));
+        $('.table-heroes.red-team').html(Mustache.render(template, {heroes: teams[1]}));
+      });
+
+      $.when(
+        $.get('templates/map-overview.html.mustache'),
+        $.get(baseUrl)
+      ).done(function(template, data) {
+        template = template[0];
+        data = data[0];
+
+        var gameSeconds = data.gameLoops / 16;
+
+        var templateData = {
+          gameLength: app.helpers.timeFormat(gameSeconds),
+          mapName: data.mapName,
+          gameType: data.gameType,
+          gameDate: moment(data.startTime).format("DD/MM/YYYY")
+        };
+
+        $('.map-overview').html(Mustache.render(template, templateData));
+
+      });
+
+    });
+  </script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="page-header map-overview">
+    </div>
+
+    <h3>Teams Overview</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <table class="table table-bordered table-heroes blue-team">
+        </table>
+      </div>
+      <div class="col-md-6">
+        <table class="table table-bordered table-heroes red-team">
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>Report List</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <ul>
+          <li><a href="deathMap.html">Death Map</a></li>
+          <li><a href="timeLine.html">Timeline</a></li>
+          <li><a href="armyStr.html">Army Strength</a></li>
+        </ul>
+      </div>
+    </div>
+
+
+  </div> <!-- /container -->
+
+</body>
+</html>

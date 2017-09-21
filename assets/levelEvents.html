@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script src="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.min.js"></script>
+
+    <style>
+        text {
+            font: 12px sans-serif;
+        }
+        svg {
+            display: block;
+        }
+        html, body, svg {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.9.1/bootstrap-table.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.9.1/bootstrap-table.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class='with-3d-shadow with-transitions'>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="col-md-8 col-md-offset-2">
+            <p class="text-center"> Experience over time </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="container-chart">
+                <svg id="LevelEvents"></svg>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="container-chart">
+                <svg id="LevelDiffEvents"></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var BlueTeamLevel = [{'seconds': 3, 'level': 1}, {'seconds': 112, 'level': 2}, {'seconds': 176, 'level': 3}, {'seconds': 203, 'level': 4}, {'seconds': 240, 'level': 5}, {'seconds': 288, 'level': 6}, {'seconds': 355, 'level': 7}, {'seconds': 404, 'level': 8}, {'seconds': 435, 'level': 9}, {'seconds': 489, 'level': 10}, {'seconds': 539, 'level': 11}, {'seconds': 641, 'level': 12}, {'seconds': 684, 'level': 13}, {'seconds': 764, 'level': 14}, {'seconds': 789, 'level': 15}, {'seconds': 823, 'level': 16}, {'seconds': 860, 'level': 17}, {'seconds': 917, 'level': 18}, {'seconds': 987, 'level': 19}, {'seconds': 1058, 'level': 20}, {'seconds': 1146, 'level': 21}, {'seconds': 1247, 'level': 22}]
+    var RedTeamLevel = [{'seconds': 3, 'level': 1}, {'seconds': 115, 'level': 2}, {'seconds': 155, 'level': 3}, {'seconds': 189, 'level': 4}, {'seconds': 236, 'level': 5}, {'seconds': 269, 'level': 6}, {'seconds': 320, 'level': 7}, {'seconds': 351, 'level': 8}, {'seconds': 404, 'level': 9}, {'seconds': 451, 'level': 10}, {'seconds': 504, 'level': 11}, {'seconds': 529, 'level': 12}, {'seconds': 581, 'level': 13}, {'seconds': 639, 'level': 14}, {'seconds': 697, 'level': 15}, {'seconds': 737, 'level': 16}, {'seconds': 823, 'level': 17}, {'seconds': 917, 'level': 18}, {'seconds': 993, 'level': 19}, {'seconds': 1075, 'level': 20}, {'seconds': 1238, 'level': 21}, {'seconds': 1332, 'level': 22}]
+    var BlueLevelEvents = [];
+    var RedLevelEvents = [];
+    var LevelEvents = [];
+    var LevelDiffEvents = [];
+    var totalEvents = Math.max(BlueTeamLevel.length, RedTeamLevel.length);
+
+    for (var d = 0; d < totalEvents; d++) {
+        if (BlueTeamLevel.length > d) {
+            BlueLevelEvents.push([BlueTeamLevel[d].seconds, BlueTeamLevel[d].level ]);
+            LevelDiffEvents.push([d+1, BlueTeamLevel[d].seconds - RedTeamLevel[d].seconds]);
+        }
+        else {
+            BlueLevelEvents.push([0, d+1]);
+        }
+        if (RedTeamLevel.length > d) {
+            RedLevelEvents.push([RedTeamLevel[d].seconds, RedTeamLevel[d].level]);
+        }
+        else {
+            RedLevelEvents.push([0,d+1]);
+        }
+
+    }
+    LevelEvents = [{key: "Blue Team Level Ups", values: BlueLevelEvents}, {key: "Red Team Level Ups", values: RedLevelEvents}]
+    LevelDiffData = [{key: "Seconds difference to reach level", values: LevelDiffEvents}]
+    console.log(LevelEvents);
+
+    var LevelEventChart;
+    nv.addGraph(function() {
+
+
+
+        LevelEventChart = nv.models.multiBarChart()
+                .x(function(d) { return d[0] })
+                .y(function(d) { return d[1] })
+                .color(["#00F", "#F00"])
+                .duration(300);
+                //.useInteractiveGuideline(false)
+
+                //.pointShape("triangle-up")
+                //.pointSize(0.1);
+
+        // chart sub-models (ie. xAxis, yAxis, etc) when accessed directly, return themselves, not the parent chart, so need to chain separately
+        LevelEventChart.xAxis
+                .axisLabel("Team Level")
+                .tickFormat(d3.format(''))
+                .staggerLabels(false)
+        ;
+        LevelEventChart.yAxis
+                .axisLabel('econds to achieve level')
+                .tickFormat(d3.format(','))
+        ;
+        d3.select('#LevelEvents')
+                .datum(LevelEvents)
+                .call(LevelEventChart);
+        nv.utils.windowResize(LevelEventChart.update);
+        return LevelEventChart;
+    });
+
+    var LevelDiffChart;
+    nv.addGraph(function() {
+
+        var chartColor = d3.scale.linear()
+                .domain([-1, 0, 1])
+                .range(["red", "white", "green"]);
+
+        LevelDiffChart = nv.models.lineChart()
+                .x(function(d) { return d[0] })
+                .y(function(d) { return d[1] })
+                .duration(300)
+                .useInteractiveGuideline(false)
+//                .color(["#00F", "#F00"])
+//                .color(function (d, i) {
+//                    var colors = ["#00F", "#F00"];
+//                    console.log(i % colors.length-1);
+//                    console.log(i);
+//                    return d.values[i][i] < 0 ? colors[0] : colors[1];
+//                })
+                .pointShape("triangle-up")
+                .isArea(true)
+                .pointSize(0.1);
+
+        LevelDiffChart.color = chartColor;
+
+        // chart sub-models (ie. xAxis, yAxis, etc) when accessed directly, return themselves, not the parent chart, so need to chain separately
+        LevelDiffChart.xAxis
+                .axisLabel("Team Level")
+                .tickFormat(d3.format(''))
+                .staggerLabels(false)
+        ;
+        LevelDiffChart.yAxis
+                .axisLabel('Difference in seconds to reach level')
+                .tickFormat(d3.format(','))
+        ;
+        d3.select('#LevelDiffEvents')
+                .datum(LevelDiffData)
+                .call(LevelDiffChart);
+        nv.utils.windowResize(LevelDiffChart.update);
+        return LevelDiffChart;
+    });
+
+    //  });
+</script>
+</body>
+</html>

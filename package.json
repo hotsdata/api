@@ -1,0 +1,40 @@
+{
+  "name": "hotstats-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:crorella/hotstats-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "agentkeepalive": "^3.3.0",
+    "aws-es": "^1.5.3",
+    "aws-sdk": "^2.94.0",
+    "bunyan": "^1.8.0",
+    "elasticsearch": "^13.2.0",
+    "email-validator": "^1.0.7",
+    "fs": "0.0.2",
+    "heroprotocol": "^0.3.1",
+    "http-aws-es": "^2.0.5",
+    "jsonwebtoken": "^7.4.0",
+    "mailgun-js": "^0.11.2",
+    "needle": "^1.6.0",
+    "path": "^0.12.7",
+    "pg": "^6.2.2",
+    "pg-format": "^1.0.4",
+    "promise": "^7.1.1",
+    "randomstring": "^1.1.5",
+    "restify": "^4.0.4",
+    "sha256": "^0.2.0"
+  },
+  "devDependencies": {
+    "dtrace-provider": "^0.8.5"
+  }
+}

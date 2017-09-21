@@ -1,0 +1,27 @@
+    <thead>
+      <tr>
+        <th class="col-md-2">Team 1 Name</th>
+        <th class="col-md-1">KDA</th>
+        <th class="col-md-2">Talents</th>
+        <th class="col-md-1">XP</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#heroes}}
+      <tr>
+        <td class="hero-desc">
+          <img src="http://placehold.it/80x80">
+          <span>{{heroName}}</span>
+        </td>
+        <td>{{kills}}/{{deathCount}}/{{assists}}</td>
+        <td>
+          <ul class="talent-list">
+            {{#pickedTalents}}
+              <li><img src="http://placehold.it/30x30" title={{talent_name}}></li>
+            {{/pickedTalents}}
+          </ul>
+        </td>
+        <td>{{totalXP}}</td>
+      </tr>
+      {{/heroes}}
+    </tbody>

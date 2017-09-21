@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script src="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.min.js"></script>
+    <style type="text/css">
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000000;
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+
+        svg {
+            background: #EEEEEE;
+        }
+
+        .gridAxis .tick {
+            stroke: white;
+            opacity: 0.7;
+        }
+        .gridAxis path {
+            stroke-width: 0;
+        }
+
+        .linePath path {
+            stroke: black;
+            stroke-width: 1;
+
+        }
+
+        .linePath line {
+            stroke: white;
+        }
+
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+
+    //Width and height
+    var w = 500;
+    var h = 300;
+    var padding = 30;
+    var radius = 10;
+    var topMargin = 15;
+
+    var BlueTeamLevel = [{'seconds': 3, 'level': 1}, {'seconds': 112, 'level': 2}, {'seconds': 176, 'level': 3}, {'seconds': 203, 'level': 4}, {'seconds': 240, 'level': 5}, {'seconds': 288, 'level': 6}, {'seconds': 355, 'level': 7}, {'seconds': 404, 'level': 8}, {'seconds': 435, 'level': 9}, {'seconds': 489, 'level': 10}, {'seconds': 539, 'level': 11}, {'seconds': 641, 'level': 12}, {'seconds': 684, 'level': 13}, {'seconds': 764, 'level': 14}, {'seconds': 789, 'level': 15}, {'seconds': 823, 'level': 16}, {'seconds': 860, 'level': 17}, {'seconds': 917, 'level': 18}, {'seconds': 987, 'level': 19}, {'seconds': 1058, 'level': 20}, {'seconds': 1146, 'level': 21}, {'seconds': 1290, 'level': 22}];
+    var RedTeamLevel = [{'seconds': 3, 'level': 1}, {'seconds': 107, 'level': 2}, {'seconds': 155, 'level': 3}, {'seconds': 189, 'level': 4}, {'seconds': 236, 'level': 5}, {'seconds': 269, 'level': 6}, {'seconds': 320, 'level': 7}, {'seconds': 351, 'level': 8}, {'seconds': 404, 'level': 9}, {'seconds': 451, 'level': 10}, {'seconds': 504, 'level': 11}, {'seconds': 529, 'level': 12}, {'seconds': 581, 'level': 13}, {'seconds': 639, 'level': 14}, {'seconds': 697, 'level': 15}, {'seconds': 737, 'level': 16}, {'seconds': 823, 'level': 17}, {'seconds': 917, 'level': 18}, {'seconds': 993, 'level': 19}, {'seconds': 1075, 'level': 20}, {'seconds': 1238, 'level': 21}, {'seconds': 1332, 'level': 22}];
+    var blueTeamArea = [];
+    var redTeamArea = [];
+    var LevelDiffEvents = [];
+    var totalEvents = Math.max(BlueTeamLevel.length, RedTeamLevel.length);
+
+//    for (var d = 0; d < totalEvents; d++) {
+//        if (BlueTeamLevel.length > d) {
+//            BlueLevelEvents.push([BlueTeamLevel[d].seconds, BlueTeamLevel[d].level ]);
+//
+//        }
+//        else {
+//            BlueLevelEvents.push([0, d+1]);
+//        }
+//        if (RedTeamLevel.length > d) {
+//            RedLevelEvents.push([RedTeamLevel[d].seconds, RedTeamLevel[d].level]);
+//        }
+//        else {
+//            RedLevelEvents.push([0,d+1]);
+//        }
+//
+//    }
+
+    for (var pos=0; pos < totalEvents; pos++) {
+        if (BlueTeamLevel[pos] != null) {
+            var blueSeconds = BlueTeamLevel[pos].seconds;
+        }
+        else {
+            var blueSeconds = 0;
+        }
+        if (RedTeamLevel[pos] != null) {
+            var redSeconds = RedTeamLevel[pos].seconds;
+        }
+        else {
+            var redSeconds = 0;
+        }
+
+        var secondsDifference = -1* (blueSeconds - redSeconds);
+        LevelDiffEvents.push([pos+1, secondsDifference]);
+        if (secondsDifference > 0) {
+            blueTeamArea.push([pos + 1, secondsDifference]);
+            redTeamArea.push([pos + 1, 0]);
+        }
+        else if (secondsDifference < 0) {
+            blueTeamArea.push([pos+1, 0]);
+            redTeamArea.push([pos+1, secondsDifference]);
+        }
+        else if (secondsDifference == 0 ) {
+            blueTeamArea.push([pos + 1, 0]);
+            redTeamArea.push([pos + 1, 0]);
+        }
+    }
+
+
+
+
+
+   // LevelEvents = [{key: "Blue Team Level Ups", values: BlueLevelEvents}, {key: "Red Team Level Ups", values: RedLevelEvents}]
+
+    var elements = LevelDiffEvents;
+
+    var line = d3.svg.line()
+            .x(function(d) { return xScale(d[0]); })
+            .y(function(d) { return yScale(d[1]); });
+
+    //Create scale functions
+    var xScale = d3.scale.linear()
+            .domain([d3.min(LevelDiffEvents, function (d) { return d[0]}), d3.max(LevelDiffEvents, function(d) { return d[0] })])
+            .rangeRound([padding, w - padding]);
+
+    var yScale = d3.scale.linear()
+            .domain([d3.min(LevelDiffEvents, function(d) { return d[1]; }) - padding/2,
+                    d3.max(LevelDiffEvents, function(d) { return d[1]; }) + padding/2])
+            .rangeRound([h-padding, topMargin]);
+
+
+    //Define X axis
+    var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+    var xGridAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+
+    var yGridAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("right");
+
+    //Create SVG element
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+
+    //Create labels
+//    svg.selectAll("text")
+//            .data(LevelDiffEvents)
+//            .enter()
+//            .append("text")
+//            .text(function(d) {
+//                return  d[1];
+//            })
+//            .attr("x", function(d) {
+//                return xScale(d[0]);
+//            })
+//            .attr("y", function(d) {
+//                return yScale(d[1]);
+//            })
+//            .attr("font-family", "sans-serif")
+//            .attr("font-size", "11px")
+//            .attr("fill", "black");
+
+
+
+
+    svg.append("g")
+            .call(xGridAxis.tickSize(h-padding, 0, 0)
+                    .tickFormat(""))
+            .attr("class", "gridAxis")
+            .attr("transform", "translate(0,"+topMargin+")");
+
+    svg.append("g")
+            .call(yGridAxis.tickSize(w-padding*2 , 0, 0)
+                    .tickFormat(""))
+            .attr("class", "gridAxis")
+            .attr("transform", "translate("+padding+", 0)");
+
+    //Create X axis
+    svg.append("g")
+            .call(xAxis)
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + (h - padding) + ")");
+
+
+    svg.append("g")
+            .call(yAxis)
+            .attr("class", "axis")
+            .attr("transform", "translate("+padding+",0)");
+
+//    var contextArea = d3.svg.area()
+//            .interpolate("lineal")
+//            .x(function(d) { return xScale(d[0]) })
+//            .y0(function (d) {return yScale(d[1])})
+//            .y1(function (d) {return yScale(d[1])});
+
+    var contextArea = d3.svg.area()
+            .interpolate("lineal")
+            .x(function(d) { return xScale(d[0]) })
+            .y0(function (d) {return yScale(d[1])})
+            .y1(yScale(0));
+
+    svg.append("svg:path")
+            .attr("stroke", "black")
+            .attr("class", "linePath")
+            .attr("d", contextArea(blueTeamArea))
+            .attr("fill", "blue")
+            .attr("fill-opacity", "0.4");
+
+    svg.append("svg:path")
+            .attr("stroke", "black")
+            .attr("class", "linePath")
+            .attr("d", contextArea(redTeamArea))
+            .attr("fill", "red")
+            .attr("fill-opacity", "0.4");
+
+    //Create circles
+    svg.selectAll("circle")
+            .data(LevelDiffEvents)
+            .enter()
+            .append("circle")
+            .attr("cx", function(d) {
+                return (xScale(d[0]));
+            })
+            .attr("cy", function(d) {
+                return yScale(d[1]);
+            })
+            .attr("r", 3)
+            .attr("fill", function (d) { if (d[1] > 0) {
+                return "blue";
+            } else if (d[1] < 0) {
+                return "red";
+            } else
+                return  "white"; })
+            .attr("stroke", "black");
+
+
+
+</script>
+
+</body>
+</html>

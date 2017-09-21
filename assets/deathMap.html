@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" type="text/css" href="css/flaticon.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link href="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.css" rel="stylesheet" type="text/css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+  <script src="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/g/lodash@4.6.1,jquery@2.2.2,mustache.js@2.2.1,momentjs@2.12.0"></script>
+
+  <script src="scripts/map_stats.js"></script>
+  <script src="scripts/helpers.js"></script>
+  <script src="scripts/death_map.js"></script>
+
+  <!-- Custom styles for this template -->
+  <link href="css/main.css" rel="stylesheet">
+
+  <title>Death Map</title>
+</head>
+<body>
+  <div class="container-fluid">
+  <div class="row-fluid">
+    <div class="col-md-8 col-md-offset-2" id="mapSvg"></div>
+  </div>
+  </div>
+
+<script type="text/javascript">
+
+  var deathTooltipTemplate;
+
+  var showTooltip = function(death) {
+    var data = _.extend({}, death, {
+      soloDeath: death.soloDeath ? "Yes" : "No",
+      deathTime: app.helpers.timeFormat(death.seconds)
+    });
+
+    var html = Mustache.render(deathTooltipTemplate, data);
+
+    var coordinates = d3.mouse(this);
+
+    var css = {
+      "top": coordinates[1] + "px", // y
+      "left": (coordinates[0] + 10) + "px", // x
+      "display": "table-caption"
+    };
+
+    $(".death-tooltip").html(html).css(css);
+  }
+
+  var hideTooltip = function() {
+    $(".death-tooltip").hide();
+  }
+
+  $(function() {
+    var url = app.helpers.getApiUrl() + "/replays/" + app.helpers.getReplayId() + "/death_list";
+    $.when(
+      $.get('templates/death-tooltip.html.mustache'),
+      $.get(url)
+    ).done(function(template, data){
+      deathTooltipTemplate = template[0];
+      app.charts.deathMap(data[0], showTooltip, hideTooltip);
+    });
+  });
+
+</script>
+
+  <div class="death-tooltip tooltip"></div>
+</body>
+</html>

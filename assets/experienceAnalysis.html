@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Experience Analysis</title>
+  <script src="https://cdn.jsdelivr.net/g/lodash@4.6.1,jquery@2.2.2"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link href="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.css" rel="stylesheet" type="text/css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+  <script src="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+
+  <script src="scripts/helpers.js"></script>
+
+  <style type="text/css">
+
+    svg {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+
+    #xpText {
+      font-size: 50px;
+    }
+
+    #heroList {
+      background: #fffdf5;
+      padding-top: 30px;
+      padding-right: 30px;
+      padding-bottom: 30px;
+      padding-left: 80px;
+      border-bottom-style: double;
+    }
+
+    #XPPie {
+      background: #fffdf5;
+      padding-top: 30px;
+      padding-right: 30px;
+      padding-bottom: 30px;
+      padding-left: 80px;
+      border-right-style: double;
+    }
+
+    #XPTS {
+      background: #fffdf5;
+      padding-top: 30px;
+      padding-right: 30px;
+      padding-bottom: 30px;
+      padding-left: 50px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="col-md-10 col-md-offset-1" id="heroList">
+        <div class="col-md-2 col-md-offset-1">
+          <div id="heroPortrait">
+            <img src="css/portraits/storm_ui_ingame_hero_leaderboard_tychus_result.png">
+          </div>
+        </div>
+        <div class="col-md-2 ">
+          <div id="heroPortrait">
+            <img src="css/portraits/storm_ui_ingame_hero_leaderboard_tinker_result.png">
+          </div>
+        </div>
+        <div class="col-md-2 ">
+          <div id="heroPortrait">
+            <img src="css/portraits/storm_ui_ingame_hero_leaderboard_tyrael_result.png">
+          </div>
+        </div>
+        <div class="col-md-2 ">
+          <div id="heroPortrait">
+            <img src="css/portraits/storm_ui_ingame_hero_leaderboard_tyrande_result.png">
+          </div>
+        </div>
+        <div class="col-md-2 ">
+          <div id="heroPortrait">
+            <img src="css/portraits/storm_ui_ingame_hero_leaderboard_witchdoctor_result.png">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-md-offset-1" id="XPPie">
+        <img src="http://placehold.it/300x250">
+      </div>
+      <div class="col-md-6 " id="XPTS">
+        <img src="http://placehold.it/600x250">
+      </div>
+    </div>
+  </div>
+</body>
+
+
+    <script type="text/javascript">
+
+        $(function() {
+          var url = app.helpers.getApiUrl() + "/replays/" + app.helpers.getReplayId() + "/general_stats";
+          $.get(url).then(function(data) {
+            var w = 500;
+            var h = 500;
+            var chartScale;
+            var svg;
+            var arc;
+
+            var totalXP = [0,0];
+            var xpData = [Array(0), Array(0)];
+
+            var colors = ['AA', 'BB', 'CC', 'DD', 'EE', 'AA', 'BB', 'CC', 'DD', 'EE'];
+            for (var i in data) {
+              var team = data[i]['team'];
+              var heroXP = data[i]['totalXP'];
+              var heroName = data[i]['heroName'];
+              xpData[team].push([totalXP[team], heroXP + totalXP[team], colors[i], heroName]);
+              totalXP[team] += heroXP;
+            }
+
+            for (var t in xpData) {
+
+              // Scale for the chart pie, will return the angle
+              svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+              chartScale = d3.scale.linear()
+                  .domain([0, totalXP[t]])
+                  .range([0, 2 * Math.PI]);
+
+
+              for (var hero in xpData[t]) {
+
+                //Create SVG element
+                if (t == 1) {
+                  var baseColor = "#7777" + xpData[t][hero][2];
+                }
+                else {
+                  var baseColor = "#"+ xpData[t][hero][2] + "0000";
+                }
+
+
+
+                arc = d3.svg.arc()
+                    .innerRadius(100)
+                    .outerRadius(150)
+                    .startAngle(function () {
+                      return chartScale(xpData[t][hero][0]);
+                    })
+                    .endAngle(function () {
+                      return chartScale(xpData[t][hero][1]);
+                    });
+
+                svg.append("path")
+                    .attr("d", arc)
+                    .style("fill", baseColor)
+                    .attr("transform", "translate("+h/2+","+w/2+")")
+                    .append("svg:title")
+                    .text(xpData[t][hero][3]);
+
+                svg.append("text")
+                    .attr("id", "xpText")
+                    .attr("x", w/2 - (20*"112,312".length/2)-10 )
+                    .attr("y", h/2 + 10)
+                    .attr("fill", "black")
+                    .text("11,123");
+
+              }
+            }
+
+          });
+        });
+    </script>
+</html>
